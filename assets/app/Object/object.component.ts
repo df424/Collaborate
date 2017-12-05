@@ -1,3 +1,4 @@
+import { SocketService } from '../socket.service';
 import { ColabObject } from './object.model';
 import { Component, Input } from "@angular/core";
 

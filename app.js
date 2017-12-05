@@ -1,5 +1,4 @@
 var express = require('express');
-var enableWs = require('express-ws');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -7,11 +6,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
-var appRoutes = require('./routes/app');
-
+// Create the app and what not.
 var app = express();
-enableWs(app);
-mongoose.connect('localhost:27017/db');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -32,12 +28,28 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use('/', appRoutes);
+mongoose.connect('localhost:27017/db');
+// Setup the http server and the web socket server.
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.get('/', (req, res, next) => {
+    console.log("Returning index...");
     return res.render('index');
 });
 
+io.on('connection', function(socket){
+    console.log('User ' + socket.handshake.address + ' connected...');
+    console.log(io.engine.clientsCount +  " total clients.");
+    io.emit('user-joined', 'A user joined the session...');
 
-module.exports = app;
+    socket.on('disconnect', () => {
+        console.log('User ' + socket.handshake.address + ' disconnected...');
+        console.log(io.engine.clientsCount +  " total clients.");
+        io.emit('user-left', 'A user left the session...');
+    });
+});
+
+http.listen(3000, function() {
+    console.log("Listening on port 3000");
+});
