@@ -6,4 +6,4 @@ var schema = new mongoose.Schema({
     in_use: {type: Boolean, required: true}
 });
 
-module.exports = mongoose.model('Object', schema);
+module.exports = mongoose.model('ColabObject', schema);

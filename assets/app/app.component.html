@@ -3,7 +3,8 @@
 <div class="containe">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
-            <app-object [object]="object"></app-object>
+            <app-object [object]="object" *ngFor="let object of objects"></app-object>
+            <button class="btn-primary pull-right" (click)="onNewObject()">New Object</button>  
         </div>
     </div>
 </div>
