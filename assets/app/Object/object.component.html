@@ -1,7 +1,8 @@
 
 <article class="panel panel-default">
-    <div class="panel-body">
-        {{object.content}}
+    <div class="psnel-body">
+        <input *ngIf="object.in_use" [ngModel]="object.content" (blur)="onLostFocus()" (ngModelChange)="OnValueChanged($event)"/>
+        <label *ngIf="!object.in_use">{{object.content}}</label>
     </div>
     <footer class="panel-footer text-right">
         <div class="config" >

@@ -20,25 +20,39 @@ export class AppComponent implements OnInit {
                 console.log(data);
 
                 if(data.event == 'whole-document') {
-                    console.log(data.data);
-
                     // Empty the array.
                     this.objects = []
 
                     // Then fill it back up.
                     for(let object of data.data) {
+                        console.log(object);
                         this.objects.push(new ColabObject(
-                            object.content, object.in_use, object.id
+                            object.content, object.in_use, object._id
                         ));
                     }
                 } 
                 else if(data.event == 'new-object') {
                     console.log("Server pushed new object: " + data.data);
 
-                    this.objects.push(new ColabObject( data.data.content, data.data.in_use, data.data.id ));
+                    this.objects.push(new ColabObject( data.data.content, data.data.in_use, data.data._id ));
                 } 
                 else if(data.event == 'del-object') {
                     console.log("Server issued command to delete object: " + data.data);
+
+                    let obj = this.objects.find((x) => x.objectId == data.data._id)
+
+                    if(obj){
+                        console.log("Found matching object with ID:" + obj.objectId + ".  Removing...");
+                        this.objects.splice(this.objects.indexOf(obj), 1);
+                    }
+                }
+                else if(data.event == 'update-object')
+                {
+                    console.log("Server issued command to update object: " + data.data)
+                }
+                else if(data.event == 'lock-object')
+                {
+                    console.log("Server issued command to lock object: " + data.data)
                 }
             },
             error => console.error(error),
@@ -55,6 +69,6 @@ export class AppComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.objects = this.objectService.getObjects();
+        //this.objects = this.objectService.getObjects();
     }
 }

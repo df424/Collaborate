@@ -13,11 +13,26 @@ export class ObjectComponent {
     constructor(private objectService: ObjectService) {}
 
     onEdit() {
-        alert("It worked!");
+        this.objectService.lockObject(this.object).subscribe(
+            data => console.log(data),
+            error => console.error(error),
+        )
     }
 
     onDelete()
     {
-        this.objectService.deleteObject(this.object);        
+        console.log("Passing in: " + this.object.objectId + " to delete function.");
+        this.objectService.deleteObject(this.object).subscribe(
+            data => console.log(data),
+            error => console.error(error),
+        )       
+    }
+
+    onLostFocus() {
+        // TODO: submit final changes and unlock object.
+    }
+
+    OnValueChanged(changes) {
+        // TODO: update model so server can push to other clients.
     }
 }

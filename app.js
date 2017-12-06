@@ -61,6 +61,47 @@ app.post('/create_obj', (req, res, next) => {
 });
 
 app.delete('/:id', (req, res, next) => {
+    console.log(req.params);
+
+    ColabObject.findById(req.params.id, (err, object) => {
+        if(err) {
+            return res.status(500).json({
+                title: 'An error occured',
+                error: err
+            });
+        }
+
+        console.log(req.params);
+
+        console.log("Attempting to delete object " + req.params.id);
+
+        if(!object) {
+            return res.status(500).json({
+                title: 'Object not found',
+                error: {message: 'Object not found'}
+            });
+        }
+
+        object.remove((err, result) => {
+            if(err) {
+                return res.status(500).json({
+                    title: 'An error occured',
+                    error: err
+                });
+            }
+
+            // Since there was no error we can now let all the other users know a new object has been created.
+            io.emit('data', {event:'del-object', data:object});
+
+            res.status(200).json({
+                message: 'Removed object',
+                obj: result
+            });
+        });
+    });
+});
+
+app.patch('/', (req, res, next) => {
     ColabObject.findById(req.params.id, (err, object) => {
         if(err) {
             return res.status(500).json({
@@ -91,6 +132,18 @@ app.delete('/:id', (req, res, next) => {
         });
     });
 });
+
+
+app.get('/lock/:id', (req, res, next) => {
+    console.log('Locking: ' + req.params.id);
+
+    let result = 0;
+    res.status(201).json({
+        message: 'Object locked',
+        obj: result
+    })
+});
+
 
 io.on('connection', function(socket){
     console.log('User ' + socket.handshake.address + ' connected...');
