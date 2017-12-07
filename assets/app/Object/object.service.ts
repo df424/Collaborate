@@ -28,6 +28,14 @@ export class ObjectService {
             .catch((error: Response) => Observable.throw(error.json()));
     }
 
+    unlockObject(object: ColabObject) {
+        const params: URLSearchParams = new URLSearchParams();
+        params.set('id', object.objectId);
+        console.log("Locking: " + object.objectId);
+        return this.http.get('http://localhost:3000/unlock/' + object.objectId, {params:params})
+            .map((response: Response) => response.json())
+            .catch((error: Response) => Observable.throw(error.json()));
+    }
 
     deleteObject(object: ColabObject) {
         const params: URLSearchParams = new URLSearchParams();
@@ -39,8 +47,10 @@ export class ObjectService {
     }
 
     updateObject(object: ColabObject) {
-        //const body = JSON.stringify(object);    
-        //const headers = new Headers({'Content-Type' : 'application/json'});
-        //return this.http.patch('http://localhost:3000/')
+        const body = JSON.stringify(object);
+        const headers = new Headers({'Content-Type': 'application/json'});
+        return this.http.patch('http://localhost:3000/', body, {headers: headers})
+            .map((response: Response) => response.json())
+            .catch((error: Response) => Observable.throw(error.json()));
     }
 }

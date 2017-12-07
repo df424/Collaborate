@@ -102,33 +102,29 @@ app.delete('/:id', (req, res, next) => {
 });
 
 app.patch('/', (req, res, next) => {
-    ColabObject.findById(req.params.id, (err, object) => {
+    console.log("Recieved request to patch: " + req.body.objectId + " to " + req.body.content);
+
+    ColabObject.findByIdAndUpdate(req.body.objectId, {content: req.body.content}, {new: true}, (err, new_object) => {
         if(err) {
+            console.log(err);
             return res.status(500).json({
                 title: 'An error occured',
                 error: err
             });
         }
 
-        if(!object) {
+        if(!new_object) {
             return res.status(500).json({
                 title: 'Object not found',
                 error: {message: 'Object not found'}
             });
         }
 
-        object.remove((err, result) => {
-            if(err) {
-                return res.status(500).json({
-                    title: 'An error occured',
-                    error: err
-                });
-            }
+        io.emit('data', {event:'update-object', data:new_object});
 
-            res.status(200).json({
-                message: 'Removed object',
-                obj: result
-            });
+        res.status(200).json({
+            message: 'Removed object',
+            obj: new_object 
         });
     });
 });
@@ -137,12 +133,62 @@ app.patch('/', (req, res, next) => {
 app.get('/lock/:id', (req, res, next) => {
     console.log('Locking: ' + req.params.id);
 
-    let result = 0;
-    res.status(201).json({
-        message: 'Object locked',
-        obj: result
-    })
+    ColabObject.findOneAndUpdate({_id: req.params.id, in_use: false}, {$set:{in_use: true}}, {new:true}, (err, doc, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(500).json({
+                title: 'An error occured',
+                error: err
+            });
+        }
+
+        if(!doc) {
+            return res.status(409).json({
+                title: 'Object not locked',
+                error: err
+            });
+        }
+
+        // If we have made it here no doubt it was a big success so we emit to all users that the object is now locked.
+        io.emit('data', {event:'lock-object', data:{id:doc._id}});
+
+        res.status(201).json({
+            message: 'Object locked',
+            obj: result 
+        });
+    });
 });
+
+
+app.get('/unlock/:id', (req, res, next) => {
+    console.log('Unlocking: ' + req.params.id);
+
+    ColabObject.findOneAndUpdate({_id: req.params.id}, {$set:{in_use: false}}, {new:true}, (err, doc, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(500).json({
+                title: 'An error occured',
+                error: err
+            });
+        }
+
+        if(!doc) {
+            return res.status(409).json({
+                title: 'Object not unlocked',
+                error: err
+            });
+        }
+
+        // If we have made it here no doubt it was a big success so we emit to all users that the object is now locked.
+        io.emit('data', {event:'unlock-object', data:{id:doc._id}});
+
+        res.status(201).json({
+            message: 'Object unlocked',
+            obj: result 
+        });
+    });
+});
+
 
 
 io.on('connection', function(socket){
@@ -158,8 +204,6 @@ io.on('connection', function(socket){
 
             socket.emit('data', {event:'whole-document', data:objects});
         });
-
-    socket.sen
 
     socket.on('disconnect', () => {
         console.log('User ' + socket.handshake.address + ' disconnected...');

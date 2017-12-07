@@ -14,7 +14,10 @@ export class ObjectComponent {
 
     onEdit() {
         this.objectService.lockObject(this.object).subscribe(
-            data => console.log(data),
+            (data) => {
+                console.log(data);
+                this.object.inUseByMe = true;
+            },
             error => console.error(error),
         )
     }
@@ -30,9 +33,23 @@ export class ObjectComponent {
 
     onLostFocus() {
         // TODO: submit final changes and unlock object.
+        this.object.inUseByMe = false;
+
+        this.objectService.unlockObject(this.object).subscribe(
+            data => console.log(data),
+            error => console.error(error),
+        );
     }
 
-    OnValueChanged(changes) {
-        // TODO: update model so server can push to other clients.
+    OnValueChanged(change) {
+        this.object.content = change;
+
+        console.log("Content is now: " + this.object.content);
+
+        // update model so server can push to other clients.
+        this.objectService.updateObject(this.object).subscribe(
+            data => console.log(data),
+            error => console.error(error),
+        );
     }
 }

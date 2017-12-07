@@ -1,11 +1,14 @@
 
 <article class="panel panel-default">
-    <div class="psnel-body">
-        <input *ngIf="object.in_use" [ngModel]="object.content" (blur)="onLostFocus()" (ngModelChange)="OnValueChanged($event)"/>
-        <label *ngIf="!object.in_use">{{object.content}}</label>
+    <div class="panel-body">
+        <input *ngIf="object.inUseByMe" [ngModel]="object.content" (blur)="onLostFocus()" (ngModelChange)="OnValueChanged($event)" class="form-control"/>
+        <label *ngIf="!object.inUseByMe">{{object.content}}</label>
     </div>
-    <footer class="panel-footer text-right">
-        <div class="config" >
+    <footer class="panel-footer">
+        <div class="author" style="color: red" *ngIf="object.in_use && !object.inUseByMe">Locked</div>
+        <div class="author" style="color: green" *ngIf="!object.in_use && !object.inUseByMe">Unlocked</div>
+        <div class="author" style="color: green" *ngIf="object.inUseByMe">Editing...</div>
+        <div class="config">
             <a href="#" (click)="onEdit()">Edit</a>
             <a href="#" (click)="onDelete()">Delete</a>
         </div>
